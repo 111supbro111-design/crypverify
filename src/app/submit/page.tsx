@@ -2,6 +2,7 @@
 import { useState, ChangeEvent } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,14 +14,54 @@ export default function CustomerPortal() {
   const [previews, setPreviews] = useState<{ [key: string]: string }>({})
   const [refId, setRefId] = useState('')
 
+  // HASH GUARD STATES
+  const [txHash, setTxHash] = useState('')
+  const [isHashVerified, setIsHashVerified] = useState(false)
+  const [isValidatingHash, setIsValidatingHash] = useState(false)
+  const [hashError, setHashError] = useState('')
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name
     const file = e.target.files?.[0]
     if (file) setPreviews(prev => ({ ...prev, [name]: URL.createObjectURL(file) }))
   }
 
+  // THE BLOCKCHAIN GATEKEEPER
+  const verifyHashPresence = async () => {
+    const cleanHash = txHash.trim()
+    if (cleanHash.length < 10) return
+    
+    setIsValidatingHash(true)
+    setHashError('')
+    setIsHashVerified(false)
+
+    try {
+      if (cleanHash.startsWith('0x')) {
+        // Check Ethereum (Alchemy)
+        const res = await fetch('https://eth-mainnet.g.alchemy.com/v2/RYP7UNwfgvPgVasAzO8NC', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: "2.0", method: "eth_getTransactionByHash", params: [cleanHash], id: 1 })
+        })
+        const data = await res.json()
+        if (data?.result) setIsHashVerified(true)
+        else setHashError("ETH Hash not found on-chain")
+      } else {
+        // Check Bitcoin (BlockCypher)
+        const res = await fetch(`https://api.blockcypher.com/v1/btc/main/txs/${cleanHash}`)
+        const data = await res.json()
+        if (data.hash) setIsHashVerified(true)
+        else setHashError("BTC Hash not found on-chain")
+      }
+    } catch (e) {
+      setHashError("Network error verifying hash")
+    }
+    setIsValidatingHash(false)
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!isHashVerified) return // Double safety
     setStatus('uploading')
     const formData = new FormData(e.currentTarget)
     const generatedRef = Math.random().toString(36).substr(2, 9).toUpperCase()
@@ -40,7 +81,7 @@ export default function CustomerPortal() {
       const { error: dbError } = await supabase.from('verifications').insert({
         full_name: formData.get('fullName'),
         email: formData.get('email'),
-        tx_hash: formData.get('txHash'),
+        tx_hash: txHash,
         reference_id: generatedRef,
         id_url: idPath,
         selfie_url: selfiePath,
@@ -78,7 +119,6 @@ export default function CustomerPortal() {
 
   return (
     <div className="min-h-screen bg-slate-100 py-12 px-4 flex flex-col items-center justify-center text-black">
-      {/* Back navigation */}
       <Link href="/" className="mb-8 font-black uppercase text-xs hover:underline flex items-center gap-2 group">
         <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Main Portal
       </Link>
@@ -88,12 +128,34 @@ export default function CustomerPortal() {
           <h1 className="text-3xl font-black italic uppercase tracking-tighter">Submit Identity Records</h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6 text-black">
           <div className="space-y-4">
             <h3 className="font-black uppercase border-b-4 border-black pb-1 italic text-blue-600">01. Identity Info</h3>
             <input name="fullName" type="text" required placeholder="Legal Full Name" className="w-full p-4 border-4 border-black font-black outline-none focus:bg-yellow-50 placeholder:text-gray-300 text-black" />
             <input name="email" type="email" required placeholder="Email Address" className="w-full p-4 border-4 border-black font-black outline-none focus:bg-yellow-50 placeholder:text-gray-300 text-black" />
-            <input name="txHash" type="text" required placeholder="TXID / Transaction Hash" className="w-full p-4 border-4 border-black font-black outline-none focus:bg-yellow-50 placeholder:text-gray-300 text-black" />
+            
+            {/* HASH GUARD INPUT */}
+            <div className="relative">
+              <input 
+                name="txHash" 
+                type="text" 
+                required 
+                placeholder="TXID / Transaction Hash" 
+                value={txHash}
+                onChange={(e) => { setTxHash(e.target.value); setIsHashVerified(false); setHashError(''); }}
+                onBlur={verifyHashPresence}
+                className={`w-full p-4 border-4 font-black outline-none transition-all placeholder:text-gray-300 text-black ${
+                  isHashVerified ? 'border-green-600 bg-green-50' : hashError ? 'border-red-600 bg-red-50' : 'border-black focus:bg-yellow-50'
+                }`} 
+              />
+              <div className="absolute right-4 top-4">
+                {isValidatingHash && <Loader2 className="animate-spin text-gray-400" size={24} />}
+                {isHashVerified && <CheckCircle className="text-green-600" size={24} />}
+                {hashError && <AlertCircle className="text-red-600" size={24} />}
+              </div>
+            </div>
+            {hashError && <p className="text-[10px] font-black text-red-600 uppercase italic leading-none">{hashError}</p>}
+            {isHashVerified && <p className="text-[10px] font-black text-green-600 uppercase italic leading-none">Blockchain Confirmation Found</p>}
           </div>
 
           <div className="space-y-4">
@@ -103,8 +165,8 @@ export default function CustomerPortal() {
               { label: 'Live Selfie Check', name: 'selfieFile' },
               { label: 'Proof of Payment', name: 'receiptFile' }
             ].map((field) => (
-              <div key={field.name} className="flex items-center space-x-4 border-4 border-black p-3 bg-slate-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex-1">
+              <div key={field.name} className="flex items-center space-x-4 border-4 border-black p-3 bg-slate-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
+                <div className="flex-1 text-black">
                   <label className="text-[10px] font-black uppercase block mb-1 text-black">{field.label}</label>
                   <input name={field.name} type="file" accept="image/*" capture="environment" required onChange={handleFileChange}
                     className="text-xs font-black file:bg-black file:text-white file:border-0 file:px-3 file:py-1 file:uppercase file:mr-2 file:cursor-pointer text-black" />
@@ -114,8 +176,17 @@ export default function CustomerPortal() {
             ))}
           </div>
 
-          <button type="submit" disabled={status === 'uploading'} className="w-full bg-blue-600 text-white font-black py-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase text-2xl italic">
-            {status === 'uploading' ? 'Encrypting & Sending...' : 'Submit Documents'}
+          {/* GUARDED BUTTON */}
+          <button 
+            type="submit" 
+            disabled={status === 'uploading' || !isHashVerified} 
+            className={`w-full font-black py-6 border-4 border-black transition-all uppercase text-2xl italic ${
+              isHashVerified 
+              ? 'bg-blue-600 text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 cursor-pointer' 
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-300 shadow-none'
+            }`}
+          >
+            {status === 'uploading' ? 'Encrypting & Sending...' : isHashVerified ? 'Submit Documents' : 'Verify Hash First'}
           </button>
         </form>
       </div>

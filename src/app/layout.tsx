@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Crypverify | Secure Identity Portal",
-  description: "Secure Blockchain Document Processing System",
+  title: "Crypverify | Receipt Generator",
+  description: "Verify blockchain transactions and generate receipts",
   icons: {
     icon: 'https://zypgkofidbmjpohzvwgt.supabase.co/storage/v1/object/public/public_assets/logo.png',
   },

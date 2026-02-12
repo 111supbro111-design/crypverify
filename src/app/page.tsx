@@ -21,24 +21,29 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
           {/* Submit Button */}
-          <Link href="/submit" className="group">
-            <div className="bg-blue-600 border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all">
-              <h2 className="text-3xl font-black uppercase italic italic mb-2">Submit Docs</h2>
+          <Link href="/submit" className="group text-left">
+            <div className="bg-blue-600 border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all h-full">
+              <h2 className="text-3xl font-black uppercase italic mb-2">Submit Docs</h2>
               <p className="font-bold text-sm text-blue-200 uppercase">Verification Form</p>
             </div>
           </Link>
 
-          {/* Admin Button */}
-          <Link href="/admin" className="group">
-            <div className="bg-white text-black border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(37,99,235,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all">
-              <h2 className="text-3xl font-black uppercase italic mb-2">Staff Login</h2>
-              <p className="font-bold text-sm text-slate-500 uppercase">Review Queue</p>
+          {/* Receipt Link - Points to your other site */}
+          <a href="https://crypverify-receipts.netlify.app" target="_blank" className="group text-left">
+            <div className="bg-white text-black border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(37,99,235,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all h-full">
+              <h2 className="text-3xl font-black uppercase italic mb-2">Receipts</h2>
+              <p className="font-bold text-sm text-slate-500 uppercase">Verify Payments</p>
             </div>
-          </Link>
+          </a>
         </div>
 
-        <div className="mt-16 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">
-          Encrypted • Decentralized • Crypverify v2.0
+        <div className="mt-16 flex flex-col items-center gap-4">
+          <Link href="/admin" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-blue-400 transition-colors underline decoration-dotted">
+            Review Queue Login
+          </Link>
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-800">
+            Encrypted • Decentralized • Crypverify v2.0
+          </div>
         </div>
       </div>
     </div>
