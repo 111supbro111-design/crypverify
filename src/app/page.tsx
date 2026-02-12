@@ -22,23 +22,24 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
           {/* Submit Button */}
           <Link href="/submit" className="group text-left">
-            <div className="bg-blue-600 border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all h-full">
+            <div className="bg-blue-600 border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all h-full cursor-pointer">
               <h2 className="text-3xl font-black uppercase italic mb-2">Submit Docs</h2>
-              <p className="font-bold text-sm text-blue-200 uppercase">Verification Form</p>
+              <p className="font-bold text-sm text-blue-200 uppercase tracking-widest">Verification Form</p>
             </div>
           </Link>
 
-          {/* Receipt Link - Points to your other site */}
+          {/* Receipts Button - Pointing to your new Netlify site */}
           <a href="https://crypverify-receipts.netlify.app" target="_blank" className="group text-left">
-            <div className="bg-white text-black border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(37,99,235,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all h-full">
+            <div className="bg-white text-black border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(37,99,235,1)] group-hover:shadow-none group-hover:translate-x-2 group-hover:translate-y-2 transition-all h-full cursor-pointer">
               <h2 className="text-3xl font-black uppercase italic mb-2">Receipts</h2>
-              <p className="font-bold text-sm text-slate-500 uppercase">Verify Payments</p>
+              <p className="font-bold text-sm text-slate-500 uppercase tracking-widest">Verify Payments</p>
             </div>
           </a>
         </div>
 
+        {/* Small Review Queue Link at the bottom */}
         <div className="mt-16 flex flex-col items-center gap-4">
-          <Link href="/admin" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-blue-400 transition-colors underline decoration-dotted">
+          <Link href="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 hover:text-blue-400 transition-colors underline decoration-dotted underline-offset-4">
             Review Queue Login
           </Link>
           <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-800">
